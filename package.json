@@ -1,6 +1,6 @@
 {
   "name": "@esmalley/react-material-icons",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "description": "",
   "main": "./dist/index.cjs",
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "clean": "rm -rf dist",
-    "prebuild": "chmod +x build.sh && build.sh",
+    "prebuild": "build.sh",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist/types",
     "build:js": "node build.mjs",
     "build": "npm run clean && npm run build:types && npm run build:js && npm run fix:cjs",
