@@ -1,6 +1,7 @@
 {
   "name": "@esmalley/react-material-icons",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "private": false,
   "description": "",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
