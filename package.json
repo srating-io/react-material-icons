@@ -1,12 +1,23 @@
 {
   "name": "@esmalley/react-material-icons",
-  "version": "1.0.6",
+  "version": "2.0.0",
   "private": false,
   "description": "",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/esm/index.mjs",
+  "types": "./dist/types/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.mjs",
+      "require": "./dist/cjs/index.cjs"
+    },
+    "./*": {
+      "types": "./dist/types/components/*/index.d.ts",
+      "import": "./dist/esm/components/*/index.mjs",
+      "require": "./dist/cjs/*/index.cjs"
+    }
+  },
   "files": [
     "dist"
   ],
