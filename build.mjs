@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { readFile } from 'fs/promises';
+// import { readFile } from 'fs/promises';
 import { globSync } from 'glob';
 
 // 1. Read package.json to identify external dependencies
@@ -17,14 +17,6 @@ console.log('Start build');
 
 const entryPoints = globSync('src/**/*.{ts,tsx}');
 
-// const sharedConfig = {
-//   entryPoints: ['src/**/index.ts'], // Adjust this to your entry point
-//   bundle: true,
-//   minify: true,
-//   sourcemap: true,
-//   external,
-//   target: 'es2020', // or your browserslist equivalent
-// };
 
 const commonConfig = {
   entryPoints,
@@ -34,13 +26,13 @@ const commonConfig = {
   bundle: false, // We don't want one big file, we want a mirror of src
   minify: true,
   sourcemap: true,
-  // external,
+  packages: 'external',
 };
 
 async function build() {
   const start = performance.now();
   await Promise.all([
-    // Build ESM (Modern)
+    // Individual ESM files (mirror of src) - for deep imports & max compat
     esbuild.build({
       ...commonConfig,
       format: 'esm',
@@ -54,6 +46,15 @@ async function build() {
       format: 'cjs',
       outdir: 'dist/cjs',
       outExtension: { '.js': '.cjs' },
+    }),
+
+    // Single ESM bundle - for modern bundlers with tree shaking
+    esbuild.build({
+      ...commonConfig,
+      entryPoints: ['src/index.ts'],
+      bundle: true,
+      format: 'esm',
+      outfile: 'dist/index.mjs',
     }),
   ]);
 
