@@ -10,11 +10,11 @@ const template = (variables, { tpl }) => {
     import { SVGProps } from 'react';
     import { createIcon } from './Icon.tsx';
 
-    const ${name} = (${variables.props}) => (
+    const icon = (${variables.props}) => (
       ${variables.jsx}
     );
 
-    export default createIcon(${name});
+    export const ${name} = createIcon(icon);
   `;
 };
 

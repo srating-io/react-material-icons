@@ -96,13 +96,13 @@ async function build() {
     }),
 
     // Single ESM bundle - for modern bundlers with tree shaking
-    esbuild.build({
-      ...commonConfig,
-      entryPoints: ['src/index.ts'],
-      bundle: true,
-      format: 'esm',
-      outfile: 'dist/index.js',
-    }),
+    // esbuild.build({
+    //   ...commonConfig,
+    //   entryPoints: ['src/index.ts'],
+    //   bundle: true,
+    //   format: 'esm',
+    //   outfile: 'dist/index.js',
+    // }),
   ]);
 
   const stop = performance.now();

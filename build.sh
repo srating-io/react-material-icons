@@ -79,7 +79,7 @@ do
 
   SECONDS=0
 
-  Move and rename files: IconName.tsx -> IconNameSuffix.tsx
+  # Move and rename files: IconName.tsx -> IconNameSuffix.tsx
   for file in "$TEMP_DIR"/*.tsx; do
     # Guard clause in case no files match the pattern
     [ -e "$file" ] || continue
@@ -87,7 +87,8 @@ do
     count=$((count + 1))
 
     # 1. Get the base filename (e.g., "account-circle")
-    base=$(basename "$file" .tsx)
+    filename=$(basename "$file")
+    base="${filename%.*}"
 
     # 2. Convert base name to PascalCase (e.g., "account-circle" -> "AccountCircle")
     # This replaces hyphens with the uppercase version of the following letter
@@ -129,7 +130,7 @@ echo "Appending all component exports to index.ts..."
 # - awk: format into an export statement with tsx... esbuild will compile this later
 find ./src -name "*.tsx" ! -name "index.ts" ! -name "Icon.tsx" | \
   sed 's|./src/||; s|.tsx$||' | \
-  awk '{ print "export * from \"./" $0 ".tsx\";" }' >> ./src/index.ts
+  awk '{ print "export * from \"./" $0 ".js\";" }' >> ./src/index.ts
 
 echo "Finished processing $(wc -l < ./src/index.ts) exports!"
 echo "Finished processing all icons!"
