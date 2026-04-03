@@ -1,7 +1,7 @@
 
 module.exports = {
   typescript: true,
-  template: require('./template'),
+  template: require('./template.cjs'),
   icon: true,
   expandProps: 'end',
   memo: true, // Wraps in React.memo for performance

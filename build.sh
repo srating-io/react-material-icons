@@ -7,8 +7,38 @@ npm install @material-design-icons/svg@latest
 VARIANTS=("filled" "outlined" "round" "sharp" "two-tone")
 
 # Clear the old build to start fresh
-rm -rf ./src/components
-mkdir -p ./src/components
+rm -rf ./src
+mkdir -p ./src
+
+echo "
+import { SVGProps, forwardRef, ElementType } from 'react';
+
+export interface BaseIconProps extends SVGProps<SVGSVGElement> {
+  size?: number | string;
+  color?: string;
+}
+
+export const createIcon = (SvgComponent: ElementType) => {
+  const IconComponent = forwardRef<SVGSVGElement, BaseIconProps>(
+    ({ size = '1em', color, style, ...props }, ref) => (
+      <SvgComponent
+        ref={ref}
+        style={{
+          fontSize: size,
+          color: color,
+          display: 'inline-block',
+          verticalAlign: 'middle',
+          fill: 'currentColor',
+          ...style,
+        }}
+        {...props}
+      />
+    )
+  );
+
+  return IconComponent;
+};
+" > ./src/Icon.tsx
 
 for STYLE in "${VARIANTS[@]}"
 do
@@ -16,18 +46,69 @@ do
   
   # Define source and destination
   SOURCE_DIR="./node_modules/@material-design-icons/svg/$STYLE"
-  TARGET_DIR="./src/components/$STYLE"
+  TEMP_DIR="./temp_$STYLE"
   
   # Create target directory
-  mkdir -p $TARGET_DIR
+  mkdir -p $TEMP_DIR
 
   # Run SVGR
   # --out-dir: puts the TSX files in the style folder
-  # --index-template: creates a barrel export for that specific style
-  npx @svgr/cli --config-file svgr.config.js \
-      --index-template index-template.js \
-      --out-dir $TARGET_DIR \
-      $SOURCE_DIR
+  npx @svgr/cli --config-file svgr.config.cjs \
+    --out-dir $TEMP_DIR \
+    $SOURCE_DIR
+  
+
+  # Convert style name to PascalCase (e.g., two-tone -> TwoTone)
+  if [[ "$STYLE" == "filled" ]]; then
+    SUFFIX=""
+  else
+    # Improved PascalCase conversion: 
+    # 1. Replace hyphens with spaces 
+    # 2. Capitalize first letter of each word 
+    # 3. Remove spaces
+    SUFFIX=$(echo "$STYLE" | sed -E 's/(^|-)([a-z])/\U\2/g')
+  fi
+
+  # Count total files first for better logging
+  total_files=$(ls -1 "$TEMP_DIR"/*.tsx 2>/dev/null | wc -l)
+  count=0
+
+  # could try doing a mass rename, but I dont want to match previously ran variants
+
+  echo "Starting rename: $total_files files to process."
+
+  SECONDS=0
+
+  Move and rename files: IconName.tsx -> IconNameSuffix.tsx
+  for file in "$TEMP_DIR"/*.tsx; do
+    # Guard clause in case no files match the pattern
+    [ -e "$file" ] || continue
+
+    count=$((count + 1))
+
+    # 1. Get the base filename (e.g., "account-circle")
+    base=$(basename "$file" .tsx)
+
+    # 2. Convert base name to PascalCase (e.g., "account-circle" -> "AccountCircle")
+    # This replaces hyphens with the uppercase version of the following letter
+    PASCAL_BASE=$(echo "$base" | perl -pe 's/(^|-)(\w)/\U$2/g')
+
+    # 3. Define destination
+    # $SUFFIX is already PascalCase (e.g., "Round") or empty
+    DEST="./src/${PASCAL_BASE}${SUFFIX}.tsx"
+
+    # \033[K clears the line from the cursor to the right
+    echo -ne "Progress: [$count/$total_files] Moving $base -> $(basename "$DEST")\033[K\r"
+
+    # 3. Move and rename: ./src/AccountCircleRound.tsx
+    mv "$file" "$DEST"
+  done
+
+  duration=$SECONDS
+  echo -e "\nFinished! Processed $count files in $duration seconds."
+
+  # Clean up temp
+  rm -rf "$TEMP_DIR"
 
   echo "Finished $STYLE"
 done
@@ -35,16 +116,20 @@ done
 # Clear the main index
 echo "" > ./src/index.ts
 
-# Export the Icon logic
-echo "export * from './Icon';" >> ./src/index.ts
+# 1. Export the base Icon logic first
+# Note: Using .js extension for ESM compatibility with nodenext
+# echo "export * from './Icon.tsx';" >> ./src/index.ts
 
-# Add exports for every variant
-for STYLE in "${VARIANTS[@]}"
-do
-  # Convert "two-tone" → "TwoTone"
-  PASCAL=$(echo "$STYLE" | sed 's/-\([a-z]\)/\U\1/g; s/^\([a-z]\)/\U\1/g')
+# 2. Add exports for every generated component
+echo "Appending all component exports to index.ts..."
 
-  echo "export * as ${PASCAL} from './components/$STYLE/index';" >> ./src/index.ts
-done
+# Logic:
+# - find all .tsx files in ./src (excluding index.ts and Icon.tsx)
+# - sed: remove the './src/' prefix and '.tsx' suffix
+# - awk: format into an export statement with tsx... esbuild will compile this later
+find ./src -name "*.tsx" ! -name "index.ts" ! -name "Icon.tsx" | \
+  sed 's|./src/||; s|.tsx$||' | \
+  awk '{ print "export * from \"./" $0 ".tsx\";" }' >> ./src/index.ts
 
+echo "Finished processing $(wc -l < ./src/index.ts) exports!"
 echo "Finished processing all icons!"

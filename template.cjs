@@ -8,7 +8,7 @@ const template = (variables, { tpl }) => {
 
   return tpl`
     import { SVGProps } from 'react';
-    import { createIcon } from '../../Icon';
+    import { createIcon } from './Icon.tsx';
 
     const ${name} = (${variables.props}) => (
       ${variables.jsx}
