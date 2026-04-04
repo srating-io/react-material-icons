@@ -10,6 +10,8 @@ VARIANTS=("filled" "outlined" "round" "sharp" "two-tone")
 rm -rf ./src
 mkdir -p ./src
 
+mkdir -p ./src/utils
+
 echo "
 import { SVGProps, forwardRef, ElementType } from 'react';
 
@@ -38,7 +40,7 @@ export const createIcon = (SvgComponent: ElementType) => {
 
   return IconComponent;
 };
-" > ./src/Icon.tsx
+" > ./src/utils/Icon.tsx
 
 for STYLE in "${VARIANTS[@]}"
 do
@@ -50,6 +52,16 @@ do
   
   # Create target directory
   mkdir -p $TEMP_DIR
+
+  case $STYLE in
+    "filled")   SUFFIX="" ;;
+    "outlined") SUFFIX="Outlined" ;;
+    "round")    SUFFIX="Round" ;;
+    "sharp")    SUFFIX="Sharp" ;;
+    "two-tone") SUFFIX="TwoTone" ;;
+  esac
+
+  export ICON_SUFFIX=$SUFFIX 
 
   # Run SVGR
   # --out-dir: puts the TSX files in the style folder
@@ -127,10 +139,9 @@ echo "Appending all component exports to index.ts..."
 # Logic:
 # - find all .tsx files in ./src (excluding index.ts and Icon.tsx)
 # - sed: remove the './src/' prefix and '.tsx' suffix
-# - awk: format into an export statement with tsx... esbuild will compile this later
+# - awk: format into an export statement with js
 find ./src -name "*.tsx" ! -name "index.ts" ! -name "Icon.tsx" | \
   sed 's|./src/||; s|.tsx$||' | \
   awk '{ print "export * from \"./" $0 ".js\";" }' >> ./src/index.ts
 
 echo "Finished processing $(wc -l < ./src/index.ts) exports!"
-echo "Finished processing all icons!"
