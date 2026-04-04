@@ -70,17 +70,6 @@ do
     $SOURCE_DIR
   
 
-  # Convert style name to PascalCase (e.g., two-tone -> TwoTone)
-  if [[ "$STYLE" == "filled" ]]; then
-    SUFFIX=""
-  else
-    # Improved PascalCase conversion: 
-    # 1. Replace hyphens with spaces 
-    # 2. Capitalize first letter of each word 
-    # 3. Remove spaces
-    SUFFIX=$(echo "$STYLE" | sed -E 's/(^|-)([a-z])/\U\2/g')
-  fi
-
   # Count total files first for better logging
   total_files=$(ls -1 "$TEMP_DIR"/*.tsx 2>/dev/null | wc -l)
   count=0
@@ -104,7 +93,7 @@ do
 
     # 2. Convert base name to PascalCase (e.g., "account-circle" -> "AccountCircle")
     # This replaces hyphens with the uppercase version of the following letter
-    PASCAL_BASE=$(echo "$base" | perl -pe 's/(^|-)(\w)/\U$2/g')
+    PASCAL_BASE=$(echo "$base" | perl -F'/-|_/' -ane 'print map {ucfirst} @F')
 
     # 3. Define destination
     # $SUFFIX is already PascalCase (e.g., "Round") or empty
@@ -137,10 +126,10 @@ echo "" > ./src/index.ts
 echo "Appending all component exports to index.ts..."
 
 # Logic:
-# - find all .tsx files in ./src (excluding index.ts and Icon.tsx)
+# - find all .tsx files in ./src (excluding index.ts)
 # - sed: remove the './src/' prefix and '.tsx' suffix
 # - awk: format into an export statement with js
-find ./src -name "*.tsx" ! -name "index.ts" ! -name "Icon.tsx" | \
+find ./src -name "*.tsx" ! -name "index.ts" | \
   sed 's|./src/||; s|.tsx$||' | \
   awk '{ print "export * from \"./" $0 ".js\";" }' >> ./src/index.ts
 
