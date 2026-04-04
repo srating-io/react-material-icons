@@ -48,9 +48,11 @@ do
   
   # Define source and destination
   SOURCE_DIR="./node_modules/@material-design-icons/svg/$STYLE"
+  TEMP_SVG_DIR="./temp_svg_$STYLE"
   TEMP_DIR="./temp_$STYLE"
   
   # Create target directory
+  mkdir -p $TEMP_SVG_DIR
   mkdir -p $TEMP_DIR
 
   case $STYLE in
@@ -63,11 +65,36 @@ do
 
   export ICON_SUFFIX=$SUFFIX 
 
+  echo "Resolving SVG naming collisions dynamically..."
+  TRACKER_FILE="./seen_names_$STYLE.txt"
+  > "$TRACKER_FILE"
+
+  for svg in "$SOURCE_DIR"/*.svg; do
+    [ -e "$svg" ] || continue
+    base=$(basename "$svg" .svg)
+
+    # Normalize name: remove hyphens/underscores and convert to lowercase
+    normalized=$(echo "$base" | sed 's/[-_]//g' | tr '[:upper:]' '[:lower:]')
+
+    # If this normalized name has already been seen, dynamically append -alt
+    if grep -q "^${normalized}$" "$TRACKER_FILE"; then
+      base="${base}-alt"
+    else
+      echo "$normalized" >> "$TRACKER_FILE"
+    fi
+
+    # Copy to the temporary SVG folder with the safe name
+    cp "$svg" "$TEMP_SVG_DIR/${base}.svg"
+  done
+  
+  # Clean up the tracker file
+  rm "$TRACKER_FILE"
+
   # Run SVGR
   # --out-dir: puts the TSX files in the style folder
   npx @svgr/cli --config-file svgr.config.cjs \
     --out-dir $TEMP_DIR \
-    $SOURCE_DIR
+    $TEMP_SVG_DIR
   
 
   # Count total files first for better logging
