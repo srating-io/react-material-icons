@@ -132,7 +132,7 @@ do
     # This replaces hyphens with the uppercase version of the following letter
     PASCAL_BASE=$(echo "$base" | perl -F'/-|_/' -ane 'print map {ucfirst} @F')
 
-    # if it starts with a digit add "Icon" prefix, can not export strings which start digits in nodejs
+    # if it starts with a digit add "Icon" prefix, can not export strings which start digits in nodejs, we also do this in template.cjs
     if [[ $PASCAL_BASE =~ ^[0-9] ]]; then
       PASCAL_BASE="Icon${PASCAL_BASE}"
     fi
