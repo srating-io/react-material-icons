@@ -42,9 +42,16 @@ export const createIcon = (SvgComponent: ElementType) => {
 };
 " > ./src/utils/Icon.tsx
 
+MANIFEST_FILE="./src/utils/manifest.json"
+echo "{" > "$MANIFEST_FILE"
+
+VARIANT_COUNT=${#VARIANTS[@]}
+ITERATION=0
+
 for STYLE in "${VARIANTS[@]}"
 do
   echo "Processing $STYLE..."
+  ITERATION=$((ITERATION + 1))
   
   # Define source and destination
   SOURCE_DIR="./node_modules/@material-design-icons/svg/$STYLE"
@@ -63,7 +70,10 @@ do
     "two-tone") SUFFIX="TwoTone" ;;
   esac
 
-  export ICON_SUFFIX=$SUFFIX 
+  export ICON_SUFFIX=$SUFFIX
+
+  # Array to store names for the manifest
+  CURRENT_VARIANT_NAMES=()
 
   echo "Resolving SVG naming collisions dynamically..."
   TRACKER_FILE="./seen_names_$STYLE.txt"
@@ -122,9 +132,13 @@ do
     # This replaces hyphens with the uppercase version of the following letter
     PASCAL_BASE=$(echo "$base" | perl -F'/-|_/' -ane 'print map {ucfirst} @F')
 
-    # 3. Define destination
     # $SUFFIX is already PascalCase (e.g., "Round") or empty
-    DEST="./src/${PASCAL_BASE}${SUFFIX}.tsx"
+    COMPONENT_NAME="${PASCAL_BASE}${SUFFIX}"
+
+    # 3. Define destination
+    DEST="./src/${COMPONENT_NAME}.tsx"
+
+    CURRENT_VARIANT_NAMES+=("\"$COMPONENT_NAME\"")
 
     # \033[K clears the line from the cursor to the right
     echo -ne "Progress: [$count/$total_files] Moving $base -> $(basename "$DEST")\033[K\r"
@@ -133,14 +147,31 @@ do
     mv "$file" "$DEST"
   done
 
+  # Joins array with commas
+  ARRAY_STRING=$(IFS=,; echo "${CURRENT_VARIANT_NAMES[*]}")
+  
+  # Format style name for JSON key (two-tone -> twoTone if preferred, but keeping original style var here)
+  JSON_KEY=$(echo "$STYLE" | sed 's/-//g') 
+  
+  
+  # Add a comma if it's not the last variant
+  if [ "$ITERATION" -eq "$VARIANT_COUNT" ]; then
+    echo "  \"$JSON_KEY\": [$ARRAY_STRING]" >> "$MANIFEST_FILE"
+  else
+    echo "  \"$JSON_KEY\": [$ARRAY_STRING]," >> "$MANIFEST_FILE"
+  fi
+
   duration=$SECONDS
   echo -e "\nFinished! Processed $count files in $duration seconds."
 
   # Clean up temp
   rm -rf "$TEMP_DIR"
+  rm -rf "$TEMP_SVG_DIR"
 
   echo "Finished $STYLE"
 done
+
+echo "}" >> "$MANIFEST_FILE"
 
 # Clear the main index
 echo "" > ./src/index.ts

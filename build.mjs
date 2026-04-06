@@ -4,7 +4,7 @@ import { globSync } from 'glob';
 
 console.log('Start build');
 
-const entryPoints = globSync('src/**/*.{ts,tsx}');
+const entryPoints = globSync('src/**/*.{ts,tsx,json}');
 
 const commonConfig = {
   entryPoints,
