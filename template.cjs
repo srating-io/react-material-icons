@@ -3,10 +3,6 @@ const template = (variables, { tpl }) => {
 
   let name = variables.componentName.replace(/^Svg/, '') + suffix;
 
-  // If the name starts with a digit, prefix it with 'Icon'
-  if (/^\d/.test(name)) {
-    name = `Icon${name}`;
-  }
 
 
   return tpl`
