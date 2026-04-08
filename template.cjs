@@ -18,6 +18,7 @@ const template = (variables, { tpl }) => {
     );
 
     export const ${name} = createIcon(icon);
+    export default ${name};
   `;
 };
 
