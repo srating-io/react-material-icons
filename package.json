@@ -1,6 +1,6 @@
 {
   "name": "@esmalley/react-material-icons",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "private": false,
   "description": "",
   "type": "module",
@@ -13,6 +13,11 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
+    },
+    "./utils/*": {
+      "types": "./dist/types/utils/*.d.ts",
+      "import": "./dist/esm/utils/*.js",
+      "require": "./dist/cjs/utils/*.js"
     },
     "./*": {
       "types": "./dist/types/*.d.ts",
