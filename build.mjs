@@ -4,7 +4,7 @@ import { globSync } from 'glob';
 
 console.log('Start build');
 
-const entryPoints = globSync('src/**/*.{ts,tsx,json}');
+const entryPoints = globSync('src/**/*.{ts,tsx}');
 
 const commonConfig = {
   entryPoints,
@@ -14,11 +14,8 @@ const commonConfig = {
   target: 'es2020',
   jsx: 'transform',
   bundle: false, // We don't want one big file, we want a mirror of src
-  // minifyIdentifiers: false,
-  // minifySyntax: true,
-  // minifyWhitespace: true,
   minify: true,
-  sourcemap: true,
+  sourcemap: false,
   packages: 'external',
 };
 

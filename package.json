@@ -1,6 +1,6 @@
 {
   "name": "@esmalley/react-material-icons",
-  "version": "4.0.3",
+  "version": "5.0.0",
   "private": false,
   "description": "",
   "type": "module",
@@ -29,13 +29,12 @@
     "dist"
   ],
   "scripts": {
-    "clean": "rm -rf dist",
-    "prebuild": "bash build.sh",
+    "clean": "node -e \"const fs=require('fs'); fs.rmSync('dist', {recursive:true, force:true})\"",
+    "prebuild": "node scripts/build-icons.mjs",
     "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly --outDir dist/types",
     "build:js": "node build.mjs",
     "build": "npm run clean && npm run build:types && npm run build:js && npm run fix:cjs",
-    "fix:cjs": "node -e \"require('fs').writeFileSync('dist/cjs/package.json', JSON.stringify({type:'commonjs'}))\"",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "fix:cjs": "node scripts/fix-cjs.mjs",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -54,6 +53,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@material-design-icons/svg": "^0.14.15",
     "@svgr/cli": "^8.1.0",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^16.2.0",
@@ -66,8 +66,5 @@
     "esbuild": "^0.27.3",
     "glob": "^13.0.6",
     "typescript": "^6.0.2"
-  },
-  "dependencies": {
-    "@material-design-icons/svg": "^0.14.15"
   }
 }

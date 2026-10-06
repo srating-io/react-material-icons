@@ -4,8 +4,9 @@ module.exports = {
   template: require('./template.cjs'),
   icon: true,
   expandProps: 'end',
-  memo: true, // Wraps in React.memo for performance
-  prettier: true,
+  ref: true,
+  memo: true,
+  prettier: false,
   svgo: true,
   filenameCase: 'kebab',
   replaceAttrValues: {
